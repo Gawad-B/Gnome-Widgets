@@ -1,0 +1,6 @@
+{
+  "uuid": "testhelper@desk-widgets.local",
+  "name": "Desk Widgets test helper",
+  "description": "Enables unsafe mode (org.gnome.Shell.Eval) for tools/devshell.sh. Never install in a real session.",
+  "shell-version": ["50", "51"]
+}

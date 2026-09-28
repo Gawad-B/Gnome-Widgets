@@ -1,0 +1,265 @@
+/* Desk Widgets. Card surface colors are set per card by theme.ts; everything else lives here. */
+
+.desk-card {
+  border-radius: 22px;
+  font-feature-settings: "tnum";
+}
+
+/* Holds the widget actor and the error label, inset from the card edge. The edit shield stays a
+   direct child of .desk-card (not of this), so it still covers the full card, including the
+   padding, rather than leaving a dead band around it that swallows clicks meant for the drag. */
+.desk-card-content { padding: 16px; }
+/* A widget whose definition sets `bleed: true` (currently only the clock, for its seconds-ring
+   layout) gets this instead, so it can draw all the way to the card's own edge; it pads its own
+   non-bleeding layouts itself (see .desk-clock-inset below). */
+.desk-card-content-bleed { padding: 0; }
+
+.desk-dark .desk-card { color: #ffffff; }
+.desk-light .desk-card { color: #1e1e1e; }
+
+.desk-card-error { font-size: 13px; color: #e01b24; }
+
+/* The clock widget bleeds (see .desk-card-content-bleed) so its seconds-ring layout can draw to
+   the card's own edge; every other layout (analog, or digital with the ring off) re-adds the
+   16px .desk-card-content would otherwise have given it, so those look exactly as before. */
+.desk-clock-inset { padding: 16px; }
+
+.desk-clock-time { font-weight: 600; }
+.desk-clock-S .desk-clock-time { font-size: 40px; }
+.desk-clock-M .desk-clock-time { font-size: 52px; }
+.desk-clock-L .desk-clock-time { font-size: 72px; }
+
+.desk-clock-date { font-size: 14px; font-weight: 500; }
+.desk-clock-L .desk-clock-date { font-size: 18px; }
+.desk-dark .desk-clock-date { color: rgba(255, 255, 255, 0.7); }
+.desk-light .desk-clock-date { color: rgba(30, 30, 30, 0.7); }
+
+/* -desk-accent is read by AnalogFace via lookup_color for the seconds hand. */
+.desk-analog { -desk-accent: -st-accent-color; }
+.desk-clock-L .desk-analog { margin-bottom: 8px; }
+
+.desk-edit-backdrop { background-color: rgba(0, 0, 0, 0.35); }
+.desk-edit-dots { color: rgba(255, 255, 255, 0.35); }
+
+.desk-edit-placeholder {
+  border-radius: 22px;
+  border: 2px solid -st-accent-color;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.desk-edit-placeholder-invalid { border-color: #e01b24; }
+
+.desk-remove-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: #f6f5f4;
+  color: #1e1e1e;
+  font-size: 18px;
+  font-weight: 800;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.4);
+}
+.desk-remove-badge:hover { background-color: #ffffff; }
+
+/* The card's own inline style (theme.card.css, set by DeskCard.applyTheme) already carries a
+   `border:` and beats any stylesheet rule targeting the card itself, and St draws `dashed` as
+   solid anyway, so the faint outline is drawn on the card's un-styled edit shield instead.
+   Threshold is 70% translucency (desk-card-faint), not the 50% threshold that switches
+   ring/graph tracks to outlines (desk-tracks-outline). */
+.desk-card-faint .desk-edit-shield { border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 22px; }
+
+.desk-gallery {
+  border-radius: 28px;
+  padding: 20px 24px;
+  spacing: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+}
+.desk-gallery.desk-dark { background-color: rgba(36, 36, 36, 0.96); color: #ffffff; }
+.desk-gallery.desk-light { background-color: rgba(250, 250, 250, 0.96); color: #1e1e1e; }
+
+.desk-gallery-header { spacing: 12px; }
+.desk-gallery-title { font-size: 20px; font-weight: 700; }
+.desk-gallery-notice { font-size: 13px; color: #e01b24; }
+.desk-gallery-collapse {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+}
+.desk-gallery-collapse:hover { background-color: rgba(127, 127, 127, 0.12); }
+.desk-gallery-done {
+  padding: 6px 18px;
+  border-radius: 999px;
+  background-color: -st-accent-color;
+  color: -st-accent-fg-color;
+  font-weight: 700;
+}
+
+/* Calendar widget (sizes S/M/L). font-feature-settings comes from .desk-card, which is
+   inherited, so it isn't repeated here. */
+.desk-cal-weekday { font-weight: 700; color: -st-accent-color; }
+.desk-cal-S .desk-cal-weekday { font-size: 13px; }
+.desk-cal-M .desk-cal-weekday { font-size: 14px; }
+.desk-cal-L .desk-cal-grid .desk-cal-weekday { font-size: 11px; padding-bottom: 4px; }
+
+.desk-cal-daynum { font-weight: 600; }
+.desk-cal-S .desk-cal-daynum { font-size: 46px; }
+.desk-cal-M .desk-cal-daynum { font-size: 20px; font-weight: 500; }
+.desk-cal-L .desk-cal-grid .desk-cal-daynum { font-size: 13px; font-weight: 500; }
+
+.desk-cal-event { font-size: 13px; }
+.desk-cal-S .desk-cal-event { font-size: 14px; padding-top: 4px; }
+.desk-dark .desk-cal-event { color: rgba(255, 255, 255, 0.85); }
+.desk-light .desk-cal-event { color: rgba(30, 30, 30, 0.85); }
+
+.desk-cal-event-time { font-size: 12px; font-weight: 600; min-width: 60px; }
+.desk-dark .desk-cal-event-time { color: rgba(255, 255, 255, 0.6); }
+.desk-light .desk-cal-event-time { color: rgba(30, 30, 30, 0.6); }
+
+.desk-cal-event-bar { width: 3px; border-radius: 2px; background-color: -st-accent-color; margin: 2px 8px 2px 0; }
+
+.desk-cal-empty { font-size: 14px; }
+.desk-dark .desk-cal-empty { color: rgba(255, 255, 255, 0.6); }
+.desk-light .desk-cal-empty { color: rgba(30, 30, 30, 0.6); }
+
+.desk-cal-grid { padding-top: 4px; padding-bottom: 6px; }
+/* St's box model adds border to width/height (there's no box-sizing: border-box), so the outer
+   cell is sized down to 22px to leave room for a 2px border without growing the 26px circle that
+   the rest of the grid (row height, the L detail section below it) was built to fit. */
+.desk-cal-day { width: 22px; height: 22px; border-radius: 13px; border: 2px solid transparent; }
+/* St has no CSS `opacity` property (it's silently ignored), so dimming an other-month day has
+   to be a per-theme color, like the rest of this file's lower-emphasis text. */
+.desk-dark .desk-cal-day-other { color: rgba(255, 255, 255, 0.35); }
+.desk-light .desk-cal-day-other { color: rgba(30, 30, 30, 0.35); }
+.desk-cal-day-today { background-color: -st-accent-color; color: -st-accent-fg-color; }
+.desk-cal-day-dot { width: 4px; height: 4px; border-radius: 2px; background-color: -st-accent-color; margin-top: 2px; }
+.desk-cal-day-today .desk-cal-day-dot { background-color: -st-accent-fg-color; }
+/* The selected-day ring: distinct from today's filled circle (dayCell() never adds both classes
+   to the same cell - see month-grid.ts). */
+.desk-cal-day-selected { border-color: -st-accent-color; }
+/* Day cells are real St.Buttons (clickable - month-grid.ts's onDayClicked), so a :hover rule here
+   is fine per the global constraints (":hover only on real buttons"). today's own hover keeps its
+   accent fill instead of picking up the dim generic hover background. */
+.desk-dark .desk-cal-day:hover { background-color: rgba(255, 255, 255, 0.1); }
+.desk-light .desk-cal-day:hover { background-color: rgba(30, 30, 30, 0.08); }
+.desk-cal-day-today:hover { background-color: -st-accent-color; }
+/* The two rules above are per-theme (0,3,0) and beat this at equal specificity by source order
+   alone, so today's own hover needs the same (0,3,0) theme-scoped form to actually win and keep
+   its accent fill instead of the dim generic hover background. */
+.desk-dark .desk-cal-day-today:hover, .desk-light .desk-cal-day-today:hover { background-color: -st-accent-color; }
+
+/* The ‹ title › nav row shared by M, L and the popup (nav-header.ts). */
+.desk-cal-nav { spacing: 4px; }
+.desk-cal-nav-arrow { width: 22px; height: 22px; border-radius: 11px; }
+.desk-dark .desk-cal-nav-arrow:hover { background-color: rgba(255, 255, 255, 0.12); }
+.desk-light .desk-cal-nav-arrow:hover { background-color: rgba(30, 30, 30, 0.12); }
+.desk-cal-nav-icon { icon-size: 14px; }
+.desk-cal-nav-title { font-weight: 600; }
+
+/* The "Today" pill (nav-header.ts, and the S size's own trailing button - calendar.ts). */
+.desk-cal-today-pill { font-size: 11px; padding: 1px 8px; border-radius: 9px; color: -st-accent-color; }
+.desk-dark .desk-cal-today-pill { background-color: rgba(255, 255, 255, 0.1); }
+.desk-light .desk-cal-today-pill { background-color: rgba(30, 30, 30, 0.1); }
+.desk-dark .desk-cal-today-pill:hover { background-color: rgba(255, 255, 255, 0.16); }
+.desk-light .desk-cal-today-pill:hover { background-color: rgba(30, 30, 30, 0.16); }
+
+/* The popup (shell/calendar-popup.ts): a PopupMenu living in uiGroup, outside .desk-dark/
+   .desk-light, so it takes the Shell's own popup-menu colours - no theme-scoped rule targets
+   anything inside it; accent colours and inherited `color` only. Confirmed live under both
+   org.gnome.desktop.interface color-scheme 'default' and 'prefer-light' as well as 'prefer-dark' -
+   .desk-card (theme.ts) follows that setting on its own, and the popup, being outside it, takes
+   whichever of the Shell's own dark.css/light.css is active instead (only 'prefer-light' actually
+   switches the Shell's own chrome to light here - 'default' still renders it dark). */
+.desk-cal-popup-content { min-width: 280px; spacing: 8px; padding: 4px 6px; }
+/* A 34x34 cell would, with .desk-cal-day's 2px border, render a 38px rounded square,
+   not a circle (St has no box-sizing: border-box - the border adds to width/height, same reason
+   the widget's own 22px cells make a 26px circle). Carving the border out of the *outer* 34px
+   size the same way needs a 30px inner cell instead, and a matching 17px radius. */
+.desk-cal-grid-popup .desk-cal-day { width: 30px; height: 30px; border-radius: 17px; }
+/* Other-month numbers stay dim; today's own filled circle keeps -st-accent-fg-color. Ordinary
+   current-month numbers need *no* rule here: a `reactive: false` menu item would make St add the
+   `:insensitive` style pseudo-class, and `.popup-inactive-menu-item:insensitive` is a dim grey in
+   the Shell's own dark.css/light.css (rgb(155,155,157) dark, a similar dim tone light) - a
+   hard-coded white override here would "fix" dark mode by accident while actively breaking light
+   mode (white-on-near-white is unreadable). calendar-popup.ts instead builds the item so it never
+   gets `:insensitive` in the first place (see its own comment), so ordinary numbers get the
+   Shell's own plain, undimmed colour for free, in both styles. These two still need their own
+   rule - they're deliberately *more* dim (other-month) or accent-coloured (today), overriding
+   that same plain colour. */
+.desk-cal-grid-popup .desk-cal-day-other .desk-cal-daynum { color: rgba(128, 128, 128, 0.8); }
+.desk-cal-grid-popup .desk-cal-day-today .desk-cal-daynum { color: -st-accent-fg-color; }
+.desk-cal-popup-open-app {
+  color: -st-accent-color; padding: 4px 10px; border-radius: 8px;
+}
+.desk-cal-popup-open-app:hover { background-color: rgba(128, 128, 128, 0.1); }
+/* The widget's own arrow/day/Today-pill hover and pill background are all theme-scoped
+   (.desk-dark/.desk-light), which the popup - outside both - never matches, so it would otherwise
+   have no hover feedback and no pill background at all. rgba(128,128,128,*) reads fine against
+   both of the Shell's own popup-menu styles, unlike a fixed white or black. */
+.desk-cal-popup .desk-cal-nav-arrow:hover { background-color: rgba(128, 128, 128, 0.2); }
+.desk-cal-popup .desk-cal-day:hover { background-color: rgba(128, 128, 128, 0.2); }
+/* Same specificity as the rule above (0,3,0: one more class each than the widget's own
+   dark/light-scoped pair) - source order alone decides the tie, so today's own hover rule has to
+   come after it to win and keep its accent fill instead of the dim generic hover. */
+.desk-cal-popup .desk-cal-day-today:hover { background-color: -st-accent-color; }
+.desk-cal-popup .desk-cal-today-pill { background-color: rgba(128, 128, 128, 0.15); }
+.desk-cal-popup .desk-cal-today-pill:hover { background-color: rgba(128, 128, 128, 0.25); }
+
+.desk-gallery-tiles { spacing: 20px; padding-bottom: 4px; }
+.desk-gallery-tile { spacing: 6px; }
+.desk-gallery-hit { border-radius: 14px; }
+.desk-gallery-hit:hover { background-color: rgba(127, 127, 127, 0.12); }
+.desk-gallery-name { font-weight: 700; }
+.desk-gallery-description { font-size: 12px; }
+.desk-gallery-sizes { spacing: 4px; }
+.desk-gallery-size { padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.desk-gallery-size:checked { background-color: -st-accent-color; color: -st-accent-fg-color; }
+
+/* Weather widget (sizes S/M/L). font-feature-settings comes from .desk-card, which is
+   inherited, so it isn't repeated here. M and L are both 2 grid cells wide, so the main column
+   (reused from S) is given a fixed, narrower width there to leave enough room for 5 hourly
+   columns at "%l %p"-formatted widths (e.g. "12 PM") without either section ellipsizing text
+   that should fit. */
+.desk-weather-main { spacing: 4px; }
+.desk-weather-M .desk-weather-main, .desk-weather-L .desk-weather-main { width: 92px; }
+
+.desk-weather-location { font-size: 12px; font-weight: 600; }
+.desk-dark .desk-weather-location { color: rgba(255, 255, 255, 0.7); }
+.desk-light .desk-weather-location { color: rgba(30, 30, 30, 0.7); }
+
+.desk-weather-temp { font-weight: 700; }
+.desk-weather-S .desk-weather-temp { font-size: 36px; }
+.desk-weather-M .desk-weather-temp, .desk-weather-L .desk-weather-temp { font-size: 26px; }
+
+.desk-weather-condition { spacing: 4px; }
+.desk-weather-summary { font-size: 13px; }
+.desk-dark .desk-weather-summary { color: rgba(255, 255, 255, 0.85); }
+.desk-light .desk-weather-summary { color: rgba(30, 30, 30, 0.85); }
+
+.desk-weather-hilo { font-size: 12px; font-weight: 600; }
+.desk-dark .desk-weather-hilo { color: rgba(255, 255, 255, 0.6); }
+.desk-light .desk-weather-hilo { color: rgba(30, 30, 30, 0.6); }
+
+.desk-weather-row { spacing: 10px; }
+
+.desk-weather-hourly { spacing: 6px; }
+.desk-weather-hour { spacing: 2px; }
+.desk-weather-hour-time { font-size: 10px; font-weight: 600; }
+.desk-dark .desk-weather-hour-time { color: rgba(255, 255, 255, 0.6); }
+.desk-light .desk-weather-hour-time { color: rgba(30, 30, 30, 0.6); }
+.desk-weather-hour-temp { font-size: 11px; font-weight: 600; }
+
+.desk-weather-daily { spacing: 6px; padding-top: 8px; }
+.desk-weather-day-row { spacing: 10px; }
+/* Fixed (not min-) widths: a start-packed row otherwise shifts every column after the first by
+   however much "Today" is wider than "Mon"/"Wed"/etc, so the icon/range/bar track no longer line
+   up between rows. */
+.desk-weather-day-name { font-size: 12px; font-weight: 600; width: 40px; }
+.desk-weather-day-range { font-size: 12px; font-weight: 600; width: 72px; }
+
+.desk-weather-day-bar-track { border-radius: 2px; }
+.desk-dark .desk-weather-day-bar-track { background-color: rgba(255, 255, 255, 0.15); }
+.desk-light .desk-weather-day-bar-track { background-color: rgba(30, 30, 30, 0.15); }
+.desk-weather-day-bar { border-radius: 2px; background-color: -st-accent-color; }
+
+.desk-weather-empty { font-size: 14px; }
+.desk-dark .desk-weather-empty { color: rgba(255, 255, 255, 0.6); }
+.desk-light .desk-weather-empty { color: rgba(30, 30, 30, 0.6); }

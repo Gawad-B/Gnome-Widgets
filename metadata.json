@@ -1,0 +1,9 @@
+{
+  "uuid": "desk-widgets@gawad-b.github.io",
+  "name": "Desk Widgets",
+  "description": "macOS-style desktop widgets on a snapping grid. Personal-use extension: not published on extensions.gnome.org.",
+  "shell-version": ["50", "51"],
+  "url": "https://github.com/Gawad-B/Gnome-Widgets",
+  "settings-schema": "org.gnome.shell.extensions.desk-widgets",
+  "version-name": "0.1.0"
+}

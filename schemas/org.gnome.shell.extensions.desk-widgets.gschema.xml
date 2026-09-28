@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <enum id="org.gnome.shell.extensions.desk-widgets.ThemeMode">
+    <value nick="system" value="0"/>
+    <value nick="light" value="1"/>
+    <value nick="dark" value="2"/>
+  </enum>
+  <enum id="org.gnome.shell.extensions.desk-widgets.DimMode">
+    <value nick="automatic" value="0"/>
+    <value nick="always" value="1"/>
+    <value nick="never" value="2"/>
+  </enum>
+  <schema id="org.gnome.shell.extensions.desk-widgets" path="/org/gnome/shell/extensions/desk-widgets/">
+    <key name="layout" type="s">
+      <default>''</default>
+      <summary>Widget layout</summary>
+      <description>JSON: {"version": 1, "widgets": [{"id", "type", "size", "col", "row", "config"}]}. Empty means the default layout.</description>
+    </key>
+    <key name="layout-backup" type="s">
+      <default>''</default>
+      <summary>Last unreadable layout value, kept for recovery</summary>
+    </key>
+    <key name="theme-mode" enum="org.gnome.shell.extensions.desk-widgets.ThemeMode">
+      <default>'system'</default>
+      <summary>Light or dark widgets; system follows the desktop color scheme</summary>
+    </key>
+    <key name="translucency" type="i">
+      <range min="0" max="100"/>
+      <default>30</default>
+      <summary>Card translucency, from solid (0) to clear (100)</summary>
+    </key>
+    <key name="dim-mode" enum="org.gnome.shell.extensions.desk-widgets.DimMode">
+      <default>'automatic'</default>
+      <summary>When to dim widgets</summary>
+    </key>
+    <key name="grid-gap" type="i">
+      <range min="8" max="32"/>
+      <default>16</default>
+      <summary>Gap between grid cells in logical pixels</summary>
+    </key>
+    <key name="edit-shortcut" type="as">
+      <default><![CDATA[['<Super><Alt>w']]]></default>
+      <summary>Shortcut that toggles edit mode</summary>
+    </key>
+  </schema>
+</schemalist>
