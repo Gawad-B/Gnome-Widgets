@@ -1,4 +1,5 @@
 import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { cellToPoint, snap, spanPixels, type Cell, type SizeName } from '../core/grid.ts';
@@ -28,6 +29,12 @@ export class EditMode {
   private _dots: St.DrawingArea | null = null;
   private _placeholder: St.Widget | null = null;
   private _unsubscribeLayer: (() => void) | null = null;
+  // Watches uiGroup for new chrome siblings (e.g. a dock re-adding itself) while editing, so the
+  // container can be raised back above them; see the comment where it's connected below.
+  private _chromeWatch = 0;
+  // A pending idle callback that re-asserts the container's position after a 'child-added' event
+  // this session hasn't already scheduled one for; see the comment where it's scheduled below.
+  private _chromeIdle = 0;
   // The Meta keybinding action id for the edit-mode shortcut (0 until set). While editing, the
   // modal grab runs the stage in Shell.ActionMode.NONE, so Main.wm's own NORMAL-mode keybinding
   // handler never fires for it; this lets the container's own key handler recognize the same
@@ -74,6 +81,36 @@ export class EditMode {
     container.add_child(new St.Widget({ style_class: 'desk-edit-backdrop', x: 0, y: 0, width, height }));
     Main.layoutManager.uiGroup.insert_child_above(container, global.window_group);
     this._container = container;
+    // Desktop chrome - a dock, the top bar - is added below global.top_window_group and can reveal
+    // itself while we're up (a dock un-hiding because no window is left to dodge), covering the
+    // backdrop and gallery at the bottom of the screen. Sitting directly below top_window_group
+    // keeps the container above all of that chrome, while modal dialogs, the on-screen keyboard
+    // and popup menus (all above top_window_group, and a BoxPointer raises itself on open) still
+    // draw on top. Chrome added while editing lands just below top_window_group too, i.e. above
+    // us, so the position is re-asserted whenever a sibling is added.
+    const uiGroup = Main.layoutManager.uiGroup;
+    const placeAboveChrome = () => {
+      if (uiGroup.contains(global.top_window_group))
+        uiGroup.set_child_below_sibling(container, global.top_window_group);
+    };
+    placeAboveChrome();
+    this._chromeWatch = uiGroup.connect('child-added', (_group, child) => {
+      if (child === container || this._chromeIdle)
+        return;
+      // Main.layoutManager.addChrome() adds the actor (this 'child-added' fires here, mid-call)
+      // and *then* reorders that same actor to sit below top_window_group via its own
+      // set_child_below_sibling() call - a plain reorder, which fires no signal of its own. Since
+      // that second step runs after this handler returns, re-asserting synchronously here can
+      // still lose the race and leave the container displaced right back under the new chrome.
+      // Deferring to the next idle runs after addChrome()'s whole call (and any of its own
+      // follow-up reordering) has already finished, so the reassertion is never undone by it.
+      this._chromeIdle = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+        this._chromeIdle = 0;
+        if (this._container === container)
+          placeAboveChrome();
+        return GLib.SOURCE_REMOVE;
+      });
+    });
 
     // From here on, `container` is up and `this._container` is set, so any throw (a hook is
     // caught individually below, but reparenting, the grab, or anything else here could still
@@ -164,6 +201,16 @@ export class EditMode {
       safely(() => {
         this._unsubscribeLayer?.();
         this._unsubscribeLayer = null;
+      });
+      safely(() => {
+        if (this._chromeWatch) {
+          Main.layoutManager.uiGroup.disconnect(this._chromeWatch);
+          this._chromeWatch = 0;
+        }
+        if (this._chromeIdle) {
+          GLib.source_remove(this._chromeIdle);
+          this._chromeIdle = 0;
+        }
       });
       safely(() => {
         for (const decoration of this._decorations.values()) {

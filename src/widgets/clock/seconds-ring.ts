@@ -82,7 +82,9 @@ export class SecondsRing {
     }
     if (second === this._toSecond)
       return;
-    if (!St.Settings.get().enable_animations) {
+    // Off-stage (being built or torn down) or animations off: step instantly. A timeline on an
+    // actor that isn't on the stage is unsupported by Clutter.
+    if (!St.Settings.get().enable_animations || !this.actor.get_stage()) {
       this._toSecond = second;
       this._fromAlphas = null;
       this._stopTimeline();

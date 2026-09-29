@@ -12,7 +12,9 @@ import {
 import type { ServiceHub } from '../services/hub.ts';
 import type { WidgetConfig, WidgetDefinition } from '../widgets/base.ts';
 import { DeskCard } from './desk-card.ts';
-import { backgroundGroup } from './shell-private.ts';
+import {
+  backgroundGroup, backgroundManagers, primaryBackgroundActor, type BackgroundManagerLike,
+} from './shell-private.ts';
 import type { Theme, ThemeState } from './theme.ts';
 
 // The widget layer: one actor over the primary monitor's work area holding a DeskCard per
@@ -30,6 +32,12 @@ export class DeskLayer {
   private _positions = new Map<string, Cell>();
   private _geometry: Geometry = computeGeometry(0, 0, 16);
   private _lastSaved = '';
+  // Tracked only while glass is on (see _setGlassTracking): a background manager's own 'changed'
+  // signal, one per monitor, is how a wallpaper swap is detected (the same signal the desktop
+  // right-click menu hook already uses for its own re-hooking).
+  private _glassOn = false;
+  private readonly _glassBackgrounds = new Set<BackgroundManagerLike>();
+  private readonly _glassSignalOwner: object = {};
 
   constructor(
     settings: Gio.Settings, registry: ReadonlyMap<string, WidgetDefinition>, hub: ServiceHub, theme: Theme,
@@ -49,7 +57,14 @@ export class DeskLayer {
       'changed::grid-gap', () => this.relayout(),
       this);
     global.display.connectObject('workareas-changed', () => this.relayout(), this);
-    Main.layoutManager.connectObject('monitors-changed', () => this.relayout(), this);
+    Main.layoutManager.connectObject('monitors-changed', () => {
+      this.relayout();
+      // backgroundManagers() itself is rebuilt on a monitor change, so a glass-tracking hook
+      // held onto the old (by then destroyed) managers; re-hook the new ones before asking them
+      // for the current primary background actor below.
+      if (this._glassOn)
+        this._hookGlassBackgrounds();
+    }, this);
 
     this._rebuildCards();
     this._applyTheme(theme.state);
@@ -194,6 +209,8 @@ export class DeskLayer {
 
   destroy(): void {
     this._unsubscribeTheme();
+    this._unhookGlassBackgrounds();
+    this.actor.disconnectObject(this._glassSignalOwner);
     this._settings.disconnectObject(this);
     global.display.disconnectObject(this);
     Main.layoutManager.disconnectObject(this);
@@ -269,8 +286,11 @@ export class DeskLayer {
     if (!def)
       throw new Error(`unknown widget type ${entry.type}`);
     const card = new DeskCard(entry, def, this._hub);
-    card.applyTheme(this._theme.state);
+    // Parented before applyTheme(), not after: a glass backdrop reads the card's own stage
+    // position at creation time (syncGlass()), which is meaningless - and logs a St-CRITICAL,
+    // "which is not in the stage" - for an actor that isn't in the actor tree yet.
     this.actor.add_child(card.actor);
+    card.applyTheme(this._theme.state);
     this._cards.set(entry.id, card);
     return card;
   }
@@ -280,5 +300,57 @@ export class DeskLayer {
     this.actor.add_style_class_name(state.mode === 'dark' ? 'desk-dark' : 'desk-light');
     for (const card of this._cards.values())
       card.applyTheme(state);
+    this._setGlassTracking(state.glass);
+  }
+
+  // Starts or stops following wallpaper swaps, exactly on the glass setting's own transitions -
+  // an unrelated theme change (translucency, mode) leaves whatever tracking state was already in
+  // place alone, since each card's own applyTheme() call above already updated its backdrop, if
+  // any, on its own.
+  private _setGlassTracking(glass: boolean): void {
+    if (glass === this._glassOn)
+      return;
+    this._glassOn = glass;
+    if (glass) {
+      this._hookGlassBackgrounds();
+      // A card's own position is a fixed offset from the layer's origin, so relayout() moving a
+      // card never moves the layer itself, and a card's own notify::allocation (which drives its
+      // backdrop the rest of the time) never fires just because the layer did - a monitor added
+      // to the left of the primary, or a strut change (a dock, the top bar), can shift the
+      // layer's own origin without touching any card's local position at all. Resync every
+      // card's backdrop whenever that happens instead.
+      this.actor.connectObject('notify::allocation', () => this._syncAllGlass(), this._glassSignalOwner);
+    } else {
+      this._unhookGlassBackgrounds();
+      this.actor.disconnectObject(this._glassSignalOwner);
+    }
+  }
+
+  private _syncAllGlass(): void {
+    for (const card of this._cards.values())
+      card.syncGlass();
+  }
+
+  private _hookGlassBackgrounds(): void {
+    this._unhookGlassBackgrounds();
+    for (const manager of backgroundManagers()) {
+      manager.connectObject('changed', () => this._onGlassBackgroundChanged(), this._glassSignalOwner);
+      this._glassBackgrounds.add(manager);
+    }
+    this._onGlassBackgroundChanged();
+  }
+
+  private _unhookGlassBackgrounds(): void {
+    for (const manager of this._glassBackgrounds)
+      manager.disconnectObject(this._glassSignalOwner);
+    this._glassBackgrounds.clear();
+  }
+
+  private _onGlassBackgroundChanged(): void {
+    const source = primaryBackgroundActor();
+    if (!source)
+      return;
+    for (const card of this._cards.values())
+      card.setGlassSource(source);
   }
 }

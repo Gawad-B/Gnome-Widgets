@@ -5,10 +5,12 @@ import type { WidgetScope } from './scope.ts';
 
 export type WidgetConfig = Record<string, unknown>;
 
-// Declarative per-widget settings, rendered by the widget's right-click menu.
+// Declarative per-widget settings, rendered by the widget's right-click menu. 'action' is a
+// plain menu item with no stored state, running WidgetDefinition.runAction when clicked.
 export type WidgetOption =
   | { kind: 'toggle'; key: string; label: string }
-  | { kind: 'choice'; key: string; label: string; choices: ReadonlyArray<{ value: string; label: string }> };
+  | { kind: 'choice'; key: string; label: string; choices: ReadonlyArray<{ value: string; label: string }> }
+  | { kind: 'action'; key: string; label: string };
 
 export interface WidgetContext {
   readonly size: SizeName;
@@ -36,6 +38,8 @@ export interface WidgetDefinition {
   // layouts itself, since every size/config of a given widget type shares one WidgetDefinition.
   readonly bleed?: boolean;
   create(ctx: WidgetContext): DeskWidget;
+  // Runs an 'action' option's menu item. Never called for any other option kind.
+  runAction?(key: string, hub: ServiceHub): void;
 }
 
 // A widget's content. A size or config change rebuilds the widget from scratch, so an

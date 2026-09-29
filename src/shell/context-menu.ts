@@ -4,6 +4,7 @@ import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import type { SizeName } from '../core/grid.ts';
+import type { ServiceHub } from '../services/hub.ts';
 import type { WidgetConfig } from '../widgets/base.ts';
 import type { DeskCard } from './desk-card.ts';
 import type { DeskLayer } from './desk-layer.ts';
@@ -71,14 +72,16 @@ export class DesktopMenuHook {
 export class WidgetMenus {
   private readonly _layer: DeskLayer;
   private readonly _editMode: EditMode;
+  private readonly _hub: ServiceHub;
   private readonly _menu: PopupMenu.PopupMenu;
   private readonly _manager: PopupMenu.PopupMenuManager;
   private readonly _hooked = new WeakSet<DeskCard>();
   private readonly _unsubscribeLayer: () => void;
 
-  constructor(layer: DeskLayer, editMode: EditMode) {
+  constructor(layer: DeskLayer, editMode: EditMode, hub: ServiceHub) {
     this._layer = layer;
     this._editMode = editMode;
+    this._hub = hub;
     this._menu = new PopupMenu.PopupMenu(Main.layoutManager.dummyCursor, 0, St.Side.TOP);
     this._menu.actor.add_style_class_name('background-menu');
     Main.layoutManager.uiGroup.add_child(this._menu.actor);
@@ -137,7 +140,10 @@ export class WidgetMenus {
     }
 
     for (const option of def.options) {
-      if (option.kind === 'toggle') {
+      if (option.kind === 'action') {
+        this._menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this._menu.addAction(option.label, () => def.runAction?.(option.key, this._hub));
+      } else if (option.kind === 'toggle') {
         this._menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         const item = new PopupMenu.PopupSwitchMenuItem(option.label, config[option.key] === true);
         item.connect('toggled', (_item, state: boolean) => {

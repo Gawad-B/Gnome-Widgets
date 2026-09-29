@@ -5,5 +5,5 @@
   "shell-version": ["50", "51"],
   "url": "https://github.com/Gawad-B/Gnome-Widgets",
   "settings-schema": "org.gnome.shell.extensions.desk-widgets",
-  "version-name": "0.1.0"
+  "version-name": "0.2.0"
 }

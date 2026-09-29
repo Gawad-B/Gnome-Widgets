@@ -1,6 +1,7 @@
 import Adw from 'gi://Adw';
 import Gdk from 'gi://Gdk';
-import type Gio from 'gi://Gio';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import Gtk from 'gi://Gtk';
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
@@ -35,6 +36,7 @@ function appearancePage(settings: Gio.Settings, handlerIds: number[]): Adw.Prefe
   group.add(comboRow(settings, 'dim-mode', 'Dim widgets', DIM_MODES, DIM_LABELS, handlerIds,
     'Fade widgets while a window is focused'));
   group.add(intSpinRow(settings, 'grid-gap', 'Grid spacing', 8, 32, 2, handlerIds));
+  group.add(switchRow(settings, 'glass', 'Glass effect', 'Blur the wallpaper behind widgets', handlerIds));
   page.add(group);
   return page;
 }
@@ -52,7 +54,34 @@ function generalPage(settings: Gio.Settings, window: Adw.PreferencesWindow, hand
   reset.connect('activated', () => confirmReset(settings, window));
   layout.add(reset);
   page.add(layout);
+
+  const data = new Adw.PreferencesGroup({ title: 'Reminders' });
+  data.add(tasksFileRow(window));
+  page.add(data);
   return page;
+}
+
+// Opens GLib.get_user_data_dir()/desk-widgets (creating it first if it doesn't exist yet - fine
+// here, since prefs isn't Shell code and never runs on the compositor's own async-only path) in
+// the desktop's default file manager.
+function tasksFileRow(window: Adw.PreferencesWindow): Adw.ButtonRow {
+  const row = new Adw.ButtonRow({ title: 'Open tasks file location' });
+  row.connect('activated', () => {
+    const dir = GLib.build_filenamev([GLib.get_user_data_dir(), 'desk-widgets']);
+    GLib.mkdir_with_parents(dir, 0o755);
+    // A launch context (rather than null) lets the launched app's window open on the same
+    // workspace/monitor and get proper startup-notification focus, instead of the fallback
+    // behavior an unspecified context falls back to.
+    const context = window.get_display().get_app_launch_context();
+    Gio.AppInfo.launch_default_for_uri_async(GLib.filename_to_uri(dir, null), context, null, (_source, result) => {
+      try {
+        Gio.AppInfo.launch_default_for_uri_finish(result!);
+      } catch (e) {
+        console.error('Desk Widgets: failed to open the tasks folder', e);
+      }
+    });
+  });
+  return row;
 }
 
 // Enum settings stored as strings, shown as a combo row.
@@ -89,6 +118,20 @@ function translucencyRow(settings: Gio.Settings, handlerIds: number[]): Adw.Acti
   });
   handlerIds.push(settings.connect('changed::translucency', () => scale.set_value(settings.get_int('translucency'))));
   row.add_suffix(scale);
+  return row;
+}
+
+function switchRow(
+  settings: Gio.Settings, key: string, title: string, subtitle: string, handlerIds: number[],
+): Adw.SwitchRow {
+  const row = new Adw.SwitchRow({ title, subtitle, active: settings.get_boolean(key) });
+  row.connect('notify::active', () => {
+    if (row.active !== settings.get_boolean(key))
+      settings.set_boolean(key, row.active);
+  });
+  handlerIds.push(settings.connect(`changed::${key}`, () => {
+    row.active = settings.get_boolean(key);
+  }));
   return row;
 }
 

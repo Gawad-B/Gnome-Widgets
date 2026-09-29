@@ -83,7 +83,7 @@ export default class DeskWidgetsExtension extends Extension {
         layer: this._layer, editMode: this._editMode, registry: REGISTRY, hub: this._hub, theme: this._theme,
       });
       this._desktopMenu = new DesktopMenuHook(() => this._editMode?.enter());
-      this._widgetMenus = new WidgetMenus(this._layer, this._editMode);
+      this._widgetMenus = new WidgetMenus(this._layer, this._editMode, this._hub);
       const action = Main.wm.addKeybinding('edit-shortcut', settings, Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
         Shell.ActionMode.NORMAL, () => this._editMode?.toggle());
       this._editMode.setToggleAction(action);

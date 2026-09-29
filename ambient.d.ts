@@ -5,3 +5,4 @@ import '@girs/gnome-shell/ambient';
 import '@girs/gnome-shell/extensions/global';
 import '@girs/gweather-4.0/ambient';
 import '@girs/gdesktopenums-3.0/ambient';
+import './soup-3.0-ambient.d.ts';

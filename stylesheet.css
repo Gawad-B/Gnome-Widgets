@@ -17,6 +17,15 @@
 .desk-dark .desk-card { color: #ffffff; }
 .desk-light .desk-card { color: #1e1e1e; }
 
+/* Glass cards: the border replaces the plain card's own rather than layering onto it, so it lives
+   only here - glassCardCss's inline style deliberately carries none, since an inline value always
+   beats a stylesheet rule targeting the same card and would otherwise leave this rule inert. The
+   backdrop itself (GlassBackdrop, an opaque child sitting just inside this border) carries the
+   tint and the top highlight instead of the card's own background/box-shadow, for the same
+   reason: an opaque child paints over whatever the card's own theme node drew underneath it. */
+.desk-dark .desk-card-glass { border: 1px solid rgba(255, 255, 255, 0.18); }
+.desk-light .desk-card-glass { border: 1px solid rgba(255, 255, 255, 0.4); }
+
 .desk-card-error { font-size: 13px; color: #e01b24; }
 
 /* The clock widget bleeds (see .desk-card-content-bleed) so its seconds-ring layout can draw to
@@ -263,3 +272,170 @@
 .desk-weather-empty { font-size: 14px; }
 .desk-dark .desk-weather-empty { color: rgba(255, 255, 255, 0.6); }
 .desk-light .desk-weather-empty { color: rgba(30, 30, 30, 0.6); }
+
+/* The loading/error/empty status line shared by the System and Battery widgets. */
+.desk-widget-empty { font-size: 14px; }
+.desk-dark .desk-widget-empty { color: rgba(255, 255, 255, 0.6); }
+.desk-light .desk-widget-empty { color: rgba(30, 30, 30, 0.6); }
+
+/* A zero-size helper actor (theme-color.ts's accentProbe) added as a child of a ring, bar or
+   sparkline drawing area purely so its own theme node resolves -st-accent-color as a plain
+   foreground colour, readable via get_foreground_color() without disturbing the drawing area's
+   own (different) foreground used for its track/secondary colour. */
+.desk-accent-probe { color: -st-accent-color; }
+
+/* System widget (sizes S/M/L). font-feature-settings comes from .desk-card. */
+.desk-sys-ring-col { spacing: 6px; }
+.desk-sys-ring-percent { font-weight: 700; font-size: 20px; }
+.desk-sys-ring-caption { font-size: 12px; font-weight: 600; }
+.desk-dark .desk-sys-ring-caption { color: rgba(255, 255, 255, 0.6); }
+.desk-light .desk-sys-ring-caption { color: rgba(30, 30, 30, 0.6); }
+
+.desk-sys-metric { spacing: 4px; padding-bottom: 10px; }
+.desk-sys-metric-row { spacing: 8px; }
+.desk-sys-metric-label { font-size: 13px; font-weight: 600; }
+.desk-sys-metric-value { font-size: 13px; font-weight: 600; }
+
+/* Battery widget (sizes S/M/L). Content budgets (a 150/316/316px card minus desk-card-content's
+   16px padding each side): S 118x118, M 284x118, L 284x284. S/M lay out up to 4 ring slots (a
+   2x2 grid on S, a single row on M); L lays out up to 6 list rows. */
+.desk-bat-s-grid { spacing: 14px; }
+.desk-bat-s-row { spacing: 14px; }
+.desk-bat-m-row { spacing: 14px; }
+.desk-bat-slot-col { spacing: 6px; }
+.desk-bat-S .desk-bat-slot-icon { icon-size: 18px; }
+.desk-bat-M .desk-bat-slot-icon { icon-size: 20px; }
+.desk-bat-S .desk-bat-slot-bolt { icon-size: 11px; }
+.desk-bat-M .desk-bat-slot-bolt { icon-size: 13px; }
+.desk-bat-slot-bolt { color: -st-accent-color; margin: 0 1px 1px 0; }
+.desk-bat-slot-percent { font-size: 12px; font-weight: 600; }
+
+.desk-bat-l-rows { spacing: 6px; }
+.desk-bat-l-row { spacing: 10px; }
+.desk-bat-l-top { spacing: 8px; padding-bottom: 7px; }
+.desk-bat-l-icon { icon-size: 16px; }
+.desk-bat-l-name { font-size: 13px; font-weight: 600; }
+.desk-bat-l-percent { font-size: 12px; font-weight: 600; min-width: 32px; }
+.desk-bat-l-glyph { icon-size: 18px; }
+.desk-bat-l-sep { height: 1px; }
+.desk-dark .desk-bat-l-sep { background-color: rgba(255, 255, 255, 0.12); }
+.desk-light .desk-bat-l-sep { background-color: rgba(30, 30, 30, 0.12); }
+
+/* Media widget (sizes S/M/L). The art holder's background-image is set inline (media.ts), not
+   here - a CSS class can't reference a per-track file:// URL. */
+.desk-media-art {
+  border-radius: 14px;
+  background-size: cover;
+}
+.desk-dark .desk-media-art { background-color: rgba(255, 255, 255, 0.08); }
+.desk-light .desk-media-art { background-color: rgba(30, 30, 30, 0.08); }
+.desk-media-art-icon { icon-size: 32px; }
+.desk-dark .desk-media-art-icon { color: rgba(255, 255, 255, 0.5); }
+.desk-light .desk-media-art-icon { color: rgba(30, 30, 30, 0.5); }
+
+.desk-media-row { spacing: 12px; }
+.desk-media-info { spacing: 4px; }
+.desk-media-title { font-weight: 700; font-size: 14px; }
+.desk-media-artists { font-size: 12px; }
+.desk-dark .desk-media-artists { color: rgba(255, 255, 255, 0.6); }
+.desk-light .desk-media-artists { color: rgba(30, 30, 30, 0.6); }
+
+.desk-media-controls { spacing: 4px; padding-top: 4px; }
+.desk-media-btn { width: 28px; height: 28px; border-radius: 14px; }
+.desk-media-btn-icon { icon-size: 15px; }
+.desk-media-btn-play { width: 32px; height: 32px; border-radius: 16px; }
+.desk-dark .desk-media-btn:hover { background-color: rgba(255, 255, 255, 0.12); }
+.desk-light .desk-media-btn:hover { background-color: rgba(30, 30, 30, 0.12); }
+/* St adds :insensitive itself whenever reactive is false (see calendar-popup.ts's own note on
+   this), but its default dimming is a plain grey with no per-theme rule behind it here - given
+   explicit colours so an unavailable prev/next/play button reads clearly dimmed against both
+   card themes rather than depending on the Shell's own stylesheet happening to still apply. */
+.desk-dark .desk-media-btn:insensitive { color: rgba(255, 255, 255, 0.3); }
+.desk-light .desk-media-btn:insensitive { color: rgba(30, 30, 30, 0.3); }
+.desk-media-btn:insensitive:hover { background-color: transparent; }
+
+/* S's play/pause button, overlaid at the art's own bottom-right corner. It hangs a few pixels
+   past that corner through a translation set in media.ts, never a negative margin: St reads a
+   negative length in the `margin` shorthand as an unsigned ~2^32px, which balloons the whole
+   card's allocation. */
+.desk-media-play-overlay {
+  width: 30px; height: 30px; border-radius: 15px;
+  background-color: -st-accent-color;
+  color: -st-accent-fg-color;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.4);
+}
+.desk-media-play-overlay .desk-media-btn-icon { icon-size: 16px; }
+/* .desk-dark/.desk-light .desk-media-btn:hover above is (0,2,0); without a matching per-theme
+   rule here, the overlay's own accent fill would lose to that dim generic hover on mouseover
+   instead of staying the accent colour - the same class of specificity tie the calendar
+   widget's today-cell hover already works around. */
+.desk-dark .desk-media-btn.desk-media-play-overlay:hover,
+.desk-light .desk-media-btn.desk-media-play-overlay:hover { background-color: -st-accent-color; }
+
+.desk-media-progress-row { spacing: 6px; padding-top: 6px; }
+.desk-media-time { font-size: 11px; font-weight: 600; min-width: 34px; }
+.desk-dark .desk-media-time { color: rgba(255, 255, 255, 0.6); }
+.desk-light .desk-media-time { color: rgba(30, 30, 30, 0.6); }
+
+/* Reminders widget (sizes S/M/L). */
+.desk-rem-s-col { spacing: 2px; }
+.desk-rem-count { font-weight: 700; }
+.desk-rem-S .desk-rem-count { font-size: 40px; }
+.desk-rem-label { font-size: 13px; font-weight: 600; }
+.desk-dark .desk-rem-label { color: rgba(255, 255, 255, 0.6); }
+.desk-light .desk-rem-label { color: rgba(30, 30, 30, 0.6); }
+.desk-rem-next { font-size: 13px; padding-top: 4px; }
+
+/* M's content area is 118px (a 150px card minus desk-card-content's 16px padding each side) and
+   L's is 284px. The header, rows and entry below are all sized to fit 3 rows plus the header in
+   M's budget with a comfortable margin (about 96px of 118px), and 2 rows plus the header and the
+   open entry (about 102px) - see reminders.ts's own ROW_LIMIT comment for the full accounting. */
+.desk-rem-header { spacing: 6px; padding-bottom: 4px; }
+.desk-rem-header-title { font-weight: 700; font-size: 14px; }
+.desk-rem-header-count { font-size: 12px; }
+.desk-dark .desk-rem-header-count { color: rgba(255, 255, 255, 0.6); }
+.desk-light .desk-rem-header-count { color: rgba(30, 30, 30, 0.6); }
+.desk-rem-add {
+  width: 22px; height: 22px; border-radius: 11px;
+  font-size: 15px; font-weight: 700;
+}
+.desk-dark .desk-rem-add { background-color: rgba(255, 255, 255, 0.12); }
+.desk-light .desk-rem-add { background-color: rgba(30, 30, 30, 0.1); }
+.desk-dark .desk-rem-add:hover { background-color: rgba(255, 255, 255, 0.2); }
+.desk-light .desk-rem-add:hover { background-color: rgba(30, 30, 30, 0.18); }
+
+.desk-rem-list { spacing: 2px; }
+.desk-rem-row { spacing: 8px; padding: 2px 0; }
+.desk-rem-check {
+  width: 18px; height: 18px; border-radius: 9px;
+  border: 2px solid rgba(128, 128, 128, 0.5);
+}
+.desk-rem-check-done {
+  border-color: transparent;
+  background-color: -st-accent-color;
+}
+.desk-rem-check-icon { icon-size: 12px; color: -st-accent-fg-color; }
+.desk-rem-title { font-size: 13px; }
+.desk-dark .desk-rem-title-done { color: rgba(255, 255, 255, 0.45); }
+.desk-light .desk-rem-title-done { color: rgba(30, 30, 30, 0.45); }
+
+.desk-rem-entry-row { padding-bottom: 4px; }
+/* Explicit height and padding, not St.Entry's own default (~9px vertical padding, which alone
+   would push the M layout over its 118px budget with 2 rows still showing) - see the pixel
+   accounting above .desk-rem-header. */
+.desk-rem-entry {
+  font-size: 13px;
+  height: 26px;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+.desk-dark .desk-rem-entry {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+.desk-light .desk-rem-entry {
+  background-color: rgba(30, 30, 30, 0.05);
+  border: 1px solid rgba(30, 30, 30, 0.16);
+  color: #1e1e1e;
+}

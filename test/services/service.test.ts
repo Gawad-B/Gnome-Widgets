@@ -177,7 +177,7 @@ test('dispose stops, drops listeners and cancels retries', () => {
   assert.equal(scheduler.pending.size, 0);
 });
 
-// --- Fix round 1 regressions -------------------------------------------------------------
+// --- Listener re-entrancy and restart ordering ---------------------------------------------
 
 test('a synchronous fail during start on the first subscribe still schedules a retry', () => {
   const { scheduler, service, seen, listen } = setup();
@@ -240,7 +240,7 @@ test('dispose then a stray publish leaves the snapshot at loading', () => {
   assert.equal(service.snapshot.state, 'loading');
 });
 
-// --- Fix round 2 regressions -------------------------------------------------------------
+// --- Retry and dispose edge cases --------------------------------------------------------
 
 test('unsubscribing on the error snapshot does not leave a stale retry scheduled, and a later subscribe restarts cleanly', () => {
   const { scheduler, service } = setup();
@@ -281,7 +281,7 @@ test('unsubscribing and resubscribing during a synchronous publish inside a retr
   assert.equal(service.isRunning(), true);
 });
 
-// --- Fix round 3: a throwing start() is never left uncleaned-up --------------------------
+// --- A throwing start() is never left uncleaned-up -----------------------------------------
 
 test('a throwing start() on first subscribe is caught, stopped, and reported as a normal error with backoff', () => {
   const { scheduler, service, seen, listen } = setup();

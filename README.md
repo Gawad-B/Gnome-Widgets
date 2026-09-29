@@ -1,8 +1,8 @@
 # Desk Widgets
 
-macOS-style desktop widgets for GNOME Shell. Clocks, a calendar and the weather sit on your
-desktop, below your windows, on a snapping grid. Each widget comes in several sizes and matches your
-light or dark theme.
+macOS-style desktop widgets for GNOME Shell. Clocks, a calendar, the weather, system stats,
+battery levels, now-playing media and a reminders list sit on your desktop, below your windows, on
+a snapping grid. Each widget comes in several sizes and matches your light or dark theme.
 
 ![GNOME Shell 50–51](https://img.shields.io/badge/GNOME%20Shell-50%E2%80%9351-4A86CF)
 ![Wayland](https://img.shields.io/badge/session-Wayland-555)
@@ -17,6 +17,7 @@ light or dark theme.
 - **Widget gallery:** browse and add widgets from a panel inside the Shell, by clicking or dragging.
 - **Light and dark:** follows the system colour scheme, or can be forced to either one.
 - **Translucency:** one slider takes the cards from solid to fully clear.
+- **Glass:** optional frosted cards that blur the wallpaper behind them.
 - **Auto-dim:** widgets fade while a window has focus, so they don't compete with your work.
 
 ## Widgets
@@ -52,10 +53,60 @@ Current conditions, an hourly forecast (Medium) and a five-day forecast with tem
 bars (Large). It uses the locations and temperature units you set in GNOME Weather, and clicking the
 widget opens GNOME Weather.
 
+### System
+CPU, memory and network at a glance.
+
+| Size | Shows |
+|---|---|
+| Small | A CPU ring and percentage |
+| Medium | CPU and memory with bars, plus a network row (which can be hidden) |
+| Large | The same rows, each with a two-minute history graph |
+
+The data comes from the kernel's own `/proc` counters. VPN tunnels and container bridges are
+excluded from the network total, so the same traffic isn't counted twice.
+
+### Battery
+Your laptop's charge, plus any Bluetooth or USB peripherals that report their own.
+
+| Size | Shows |
+|---|---|
+| Small | A 2x2 grid of rings, one per device (the laptop first, then up to three peripherals), each showing its icon. A ring turns green while charging or full, amber at 20% and red at 10% |
+| Medium | The same rings in a row, each with its percentage underneath |
+| Large | A list of up to six rows (the laptop plus up to five peripherals), each with an icon, name, percentage and a battery-level glyph that reflects the charge and whether it's charging |
+
+The data comes from UPower.
+
+### Media
+Shows and controls whatever's currently playing on any MPRIS player — Spotify, Firefox, Chromium,
+Rhythmbox, and anything else that speaks the standard MPRIS protocol.
+
+| Size | Shows |
+|---|---|
+| Small | Album art (or the app's icon), with an overlaid play/pause button |
+| Medium | Art, title and artist, plus previous, play/pause and next controls |
+| Large | The same, plus a progress bar with the elapsed and remaining time |
+
+Album art is cached in `~/.cache/desk-widgets/art`.
+
+### Reminders
+A simple to-do list.
+
+| Size | Shows |
+|---|---|
+| Small | The open count and the next task |
+| Medium | Up to three tasks, each with a checkbox |
+| Large | Up to eight tasks |
+
+On Medium and Large, click ＋ and type a task: Enter adds it and keeps the field open for the
+next one; Esc, an empty Enter or a click elsewhere closes it. Completed tasks can be
+cleared from the widget's right-click menu. Tasks are stored in
+`~/.local/share/desk-widgets/tasks.json`, a plain JSON file you can edit by hand.
+
 ## Requirements
 
 - GNOME Shell 50 or 51, on a Wayland session
 - To build: Node.js 22 or newer, npm and `make`
+- UPower, for the Battery widget's charge data (standard on GNOME)
 - Optional: GNOME Weather, for the Weather widget; GNOME Calendar, for the **Open Calendar**
   shortcut
 
@@ -101,10 +152,12 @@ make uninstall
 |---|---|
 | Style | Follow System, Light, Dark |
 | Translucency | Solid to fully clear |
+| Glass effect | On, Off — blurs the wallpaper behind each card instead of a plain translucent surface |
 | Dim widgets | Automatically (while a window is focused), Always, Never |
 | Grid spacing | 8–32 px |
 | Edit mode shortcut | Any accelerator (default <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>W</kbd>) |
 | Reset Layout | Restores the default widgets |
+| Open tasks file location | Opens the folder holding `tasks.json` |
 
 ## Development
 
@@ -141,8 +194,8 @@ journalctl -f -o cat /usr/bin/gnome-shell
 
 ```
 src/
-  core/       pure logic (grid, layout, dates, forecast, ring geometry), unit-tested under Node
-  services/   shared, reference-counted data sources (clock, calendar, weather)
+  core/       pure logic (grid, layout, dates, forecast, system stats, battery, tasks, media timing, ring geometry), unit-tested under Node
+  services/   shared, reference-counted data sources (clock, calendar, weather, system, battery, media, tasks)
   shell/      GNOME Shell integration (desktop layer, edit mode, gallery, menus, popups)
   widgets/    the widgets themselves
   extension.ts, prefs.ts

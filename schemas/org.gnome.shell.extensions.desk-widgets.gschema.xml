@@ -33,6 +33,11 @@
       <default>'automatic'</default>
       <summary>When to dim widgets</summary>
     </key>
+    <key name="glass" type="b">
+      <default>false</default>
+      <summary>Frosted glass card style</summary>
+      <description>Blurs the wallpaper behind each card instead of a plain translucent surface</description>
+    </key>
     <key name="grid-gap" type="i">
       <range min="8" max="32"/>
       <default>16</default>

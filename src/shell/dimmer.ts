@@ -110,6 +110,19 @@ export class Dimmer {
     this._targetFactor = factor;
     const params = { duration: DURATION_MS, mode: Clutter.AnimationMode.EASE_OUT_QUAD };
     this._actor.ease({ opacity, ...params });
-    this._actor.ease_property(`@effects.${EFFECT}.factor`, factor, params);
+    // DesaturateEffect is a full-layer OffscreenEffect: an extra offscreen framebuffer and paint
+    // pass on every frame, wasted whenever factor is 0 (translucency >= 50 never desaturates).
+    // Enable it up front when fading toward a non-zero factor so the fade is visible throughout;
+    // when fading toward 0, leave it enabled (it already must be, to show that fade) and disable
+    // it only once the eased value actually reaches 0, so nothing pops instead of fading.
+    if (factor !== 0)
+      this._effect.set_enabled(true);
+    this._actor.ease_property(`@effects.${EFFECT}.factor`, factor, {
+      ...params,
+      onComplete: () => {
+        if (factor === 0)
+          this._effect.set_enabled(false);
+      },
+    });
   }
 }

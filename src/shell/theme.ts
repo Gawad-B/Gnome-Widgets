@@ -1,10 +1,14 @@
 import Gio from 'gi://Gio';
-import { cardStyle, type CardStyle, type ColorMode } from '../core/theme-math.ts';
+import { cardStyle, glassCardCss, type CardStyle, type ColorMode } from '../core/theme-math.ts';
 
 export interface ThemeState {
   mode: ColorMode;
   translucency: number;
+  glass: boolean;
   card: CardStyle;
+  // The card's inline style while glass is on (see glassCardCss); `card.css` above is still
+  // computed regardless, since `card.outlineTracks` and the plain-card fallback both need it.
+  glassCss: string;
 }
 
 // Resolves light/dark and the card surface from settings, and tells listeners when either
@@ -22,6 +26,7 @@ export class Theme {
     settings.connectObject(
       'changed::theme-mode', () => this._refresh(),
       'changed::translucency', () => this._refresh(),
+      'changed::glass', () => this._refresh(),
       this);
   }
 
@@ -46,7 +51,8 @@ export class Theme {
       ? preference
       : this._interface.get_string('color-scheme') === 'prefer-dark' ? 'dark' : 'light';
     const translucency = this._settings.get_int('translucency');
-    return { mode, translucency, card: cardStyle(mode, translucency) };
+    const glass = this._settings.get_boolean('glass');
+    return { mode, translucency, glass, card: cardStyle(mode, translucency), glassCss: glassCardCss(mode, translucency) };
   }
 
   private _refresh(): void {

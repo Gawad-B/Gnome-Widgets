@@ -173,7 +173,11 @@ export class Gallery {
         preview.destroy();
       }
       preview = new DeskCard({ id: `preview-${def.type}`, type: def.type, size, col: 0, row: 0, config: {} }, def, this._o.hub);
-      preview.applyTheme(this._o.theme.state);
+      // No live backdrop for a preview tile: it isn't placed over any real stretch of
+      // wallpaper (the gallery panel itself covers whatever's behind it) and gets scaled down
+      // afterward, which would also scale-mismatch a blur radius meant for a full-size card. The
+      // glass surface tint and rim still apply, which is enough to preview the look.
+      preview.applyTheme(this._o.theme.state, false);
       const { width, height } = spanPixels(geo, size);
       preview.actor.set_size(width, height);
       preview.actor.set_scale(PREVIEW_SCALE, PREVIEW_SCALE);

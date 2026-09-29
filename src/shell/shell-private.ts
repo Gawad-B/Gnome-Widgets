@@ -1,6 +1,8 @@
 // Typed access to the private GNOME Shell members this extension relies on. Verified against
 // Shell 50.5 (ui/layout.js, ui/backgroundMenu.js, ui/workspaceAnimation.js, ui/calendar.js,
-// ui/dateMenu.js, misc/weather.js). Nothing else in the codebase touches privates.
+// ui/dateMenu.js, misc/weather.js, ui/messageList.js, ui/mpris.js). Nothing else in the
+// codebase touches privates.
+import type Gio from 'gi://Gio';
 import type Clutter from 'gi://Clutter';
 import type GWeather from 'gi://GWeather?version=4.0';
 import type Meta from 'gi://Meta';
@@ -36,6 +38,11 @@ export const backgroundManagers = (): readonly BackgroundManagerLike[] => layout
 // destroyed: a destroyed BackgroundManager's backgroundActor is null).
 export const backgroundMenuOf = (manager: BackgroundManagerLike): PopupMenu.PopupMenu | null =>
   manager.backgroundActor?._backgroundMenu ?? null;
+
+// The primary monitor's own wallpaper actor - null before startup/monitor setup has run, or
+// briefly around a monitor change while backgroundManagers() is being rebuilt.
+export const primaryBackgroundActor = (): Meta.BackgroundActor | null =>
+  backgroundManagers()[Main.layoutManager.primaryIndex]?.backgroundActor ?? null;
 
 // The monitor rect a WorkspaceGroup was built for (a subset of Main.layoutManager.monitors[i]).
 export interface AnimationMonitor {
@@ -116,10 +123,36 @@ interface ShellTopBarCalendar {
   setDate(date: Date): void;
 }
 
+// ui/mpris.js MprisPlayer, narrowed to the members the media service and widget use. `app` is
+// the looked-up Shell.App for the player's DesktopEntry (or null), narrowed to just the piece
+// used for its icon.
+export interface ShellMprisPlayer extends SignalOwner {
+  readonly _busName: string;
+  readonly status: string;                 // 'Playing' | 'Paused' | 'Stopped'
+  readonly trackTitle: string;
+  readonly trackArtists: string[];
+  readonly trackCoverUrl: string;
+  readonly app: { get_name(): string; get_icon(): Gio.Icon | null } | null;
+  readonly canPlay: boolean;
+  readonly canGoNext: boolean;
+  readonly canGoPrevious: boolean;
+  playPause(): void;
+  next(): void;
+  previous(): void;
+  raise(): void;
+}
+
+// ui/mpris.js MprisSource. Has no destroy(): it's the Shell's own instance (the notification
+// list's media section already runs it), so it's read from, never created or torn down here.
+export interface ShellMprisSource extends SignalOwner {
+  readonly players: readonly ShellMprisPlayer[];
+}
+
 interface DateMenuPrivate {
   _eventSource: ShellEventSource | null;
   _weatherItem?: { _weatherClient?: ShellWeatherClient };
   _calendar?: ShellTopBarCalendar;
+  _messageList?: { _messageView?: { _mediaSource?: ShellMprisSource } };
   menu: ShellDateMenuPopup;
 }
 
@@ -129,6 +162,19 @@ const dateMenu = (): DateMenuPrivate | null =>
 export const shellEventSource = (): ShellEventSource | null => dateMenu()?._eventSource ?? null;
 export const shellWeatherClient = (): ShellWeatherClient | null => dateMenu()?._weatherItem?._weatherClient ?? null;
 export const dateMenuPopup = (): ShellDateMenuPopup | null => dateMenu()?.menu ?? null;
+
+// The notification list's own MprisSource (ui/messageList.js MessageView._mediaSource, built
+// from ui/calendar.js CalendarMessageList._messageView). Reusing it avoids running a second
+// MprisSource, which would double the D-Bus proxies and player objects for no reason and, since
+// MprisSource has no destroy(), leak the extra one's signal handlers on every re-enable. null in
+// a session mode with no notification list (e.g. the lock screen).
+export const shellMprisSource = (): ShellMprisSource | null =>
+  dateMenu()?._messageList?._messageView?._mediaSource ?? null;
+
+// The D-Bus bus name (e.g. "org.mpris.MediaPlayer2.spotify") behind a player, for the direct
+// Properties.Get calls the position poll makes outside the Shell's own MprisPlayer proxies.
+export const mprisBusName = (player: ShellMprisPlayer): string | null =>
+  typeof player._busName === 'string' ? player._busName : null;
 
 // Puts the top-bar calendar's own displayed month back to today — exactly what ui/dateMenu.js
 // does itself on menu open (it resets `_calendar`'s selected date there). This exists because
