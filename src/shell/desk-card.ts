@@ -14,7 +14,7 @@ const sameContent = (a: WidgetEntry, b: WidgetEntry) =>
 // The card's own border, in the same 1px that cardStyle/glassCardCss always draw it at. The
 // backdrop sits inset by this much on every side, inside the border rather than under it, so the
 // border itself - painted first, before any child - stays visible in that outermost ring instead
-// of being covered by the backdrop the way the card's own background and box-shadow are.
+// of being covered by the backdrop the way the card's own background is.
 const BORDER_WIDTH = 1;
 
 // The themed surface a widget lives in. It owns the widget instance and contains its failures:

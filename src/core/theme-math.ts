@@ -12,31 +12,17 @@ type Rgb = readonly [number, number, number];
 
 const SURFACE: Record<ColorMode, Rgb> = { dark: [30, 30, 30], light: [250, 250, 250] };
 const EDGE: Record<ColorMode, Rgb> = { dark: [255, 255, 255], light: [0, 0, 0] };
-// Content shadow contrasts with the text: dark shadow under white text, light glow under dark text.
-const CONTENT_SHADOW: Record<ColorMode, Rgb> = { dark: [0, 0, 0], light: [255, 255, 255] };
-const BLACK: Rgb = [0, 0, 0];
 
 const round3 = (n: number) => Math.round(n * 1000) / 1000;
 const rgba = ([r, g, b]: Rgb, alpha: number) => `rgba(${r}, ${g}, ${b}, ${round3(alpha)})`;
 
-// Text/icon shadow lines, shared by the plain and glass surfaces: empty below 50% translucency,
-// rising linearly to a fixed peak at full translucency.
-function contentShadowCss(mode: ColorMode, t: number): string[] {
-  const shadowAlpha = t <= 0.5 ? 0 : ((t - 0.5) / 0.5) * 0.6;
-  if (shadowAlpha <= 0)
-    return [];
-  const shadow = `0 1px 3px ${rgba(CONTENT_SHADOW[mode], shadowAlpha)}`;
-  return [`text-shadow: ${shadow};`, `icon-shadow: ${shadow};`];
-}
-
+// Cards are flat: no drop shadow under the card and no text or icon shadow on its content.
 export function cardStyle(mode: ColorMode, translucency: number): CardStyle {
   const t = Math.min(Math.max(translucency, 0), 100) / 100;
   const solid = 1 - t;
   const parts = [
     `background-color: ${rgba(SURFACE[mode], 0.85 * solid)};`,
     `border: 1px solid ${rgba(EDGE[mode], 0.12 * solid)};`,
-    `box-shadow: 0 2px 12px 0 ${rgba(BLACK, 0.25 * solid)};`,
-    ...contentShadowCss(mode, t),
   ];
   return { css: parts.join(' '), outlineTracks: t >= 0.5 };
 }
@@ -67,7 +53,7 @@ export function glassSurfaceAlpha(t: number): number {
   return round3(0.10 + 0.25 * (1 - clamped));
 }
 
-// The glass card's own inline style: background tint and content shadow only, using the same
+// The glass card's own inline style: the background tint only, using the same
 // translucency mapping as cardStyle. Only actually visible on a card with no live backdrop (the
 // gallery's preview tiles): once a GlassBackdrop actor sits over the card, it's an opaque child
 // painted after the card's own background, and hides this tint completely - which is why
@@ -76,11 +62,7 @@ export function glassSurfaceAlpha(t: number): number {
 // border would always beat a stylesheet rule targeting the same card and leave the rule inert.
 export function glassCardCss(mode: ColorMode, translucency: number): string {
   const t = Math.min(Math.max(translucency, 0), 100) / 100;
-  const parts = [
-    `background-color: ${rgba(SURFACE[mode], glassSurfaceAlpha(t))};`,
-    ...contentShadowCss(mode, t),
-  ];
-  return parts.join(' ');
+  return `background-color: ${rgba(SURFACE[mode], glassSurfaceAlpha(t))};`;
 }
 
 // The same tint, as a bare color for GlassBackdrop's own tint overlay (see glassCardCss's

@@ -154,7 +154,7 @@ make uninstall
 | Translucency | Solid to fully clear |
 | Glass effect | On, Off — blurs the wallpaper behind each card instead of a plain translucent surface |
 | Dim widgets | Automatically (while a window is focused), Always, Never |
-| Grid spacing | 8–32 px |
+| Grid spacing | 8–64 px |
 | Edit mode shortcut | Any accelerator (default <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>W</kbd>) |
 | Reset Layout | Restores the default widgets |
 | Open tasks file location | Opens the folder holding `tasks.json` |

@@ -39,7 +39,7 @@
       <description>Blurs the wallpaper behind each card instead of a plain translucent surface</description>
     </key>
     <key name="grid-gap" type="i">
-      <range min="8" max="32"/>
+      <range min="8" max="64"/>
       <default>16</default>
       <summary>Gap between grid cells in logical pixels</summary>
     </key>

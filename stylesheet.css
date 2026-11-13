@@ -21,7 +21,7 @@
    only here - glassCardCss's inline style deliberately carries none, since an inline value always
    beats a stylesheet rule targeting the same card and would otherwise leave this rule inert. The
    backdrop itself (GlassBackdrop, an opaque child sitting just inside this border) carries the
-   tint and the top highlight instead of the card's own background/box-shadow, for the same
+   tint and the top highlight instead of the card's own background, for the same
    reason: an opaque child paints over whatever the card's own theme node drew underneath it. */
 .desk-dark .desk-card-glass { border: 1px solid rgba(255, 255, 255, 0.18); }
 .desk-light .desk-card-glass { border: 1px solid rgba(255, 255, 255, 0.4); }

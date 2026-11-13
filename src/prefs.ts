@@ -35,7 +35,7 @@ function appearancePage(settings: Gio.Settings, handlerIds: number[]): Adw.Prefe
   group.add(translucencyRow(settings, handlerIds));
   group.add(comboRow(settings, 'dim-mode', 'Dim widgets', DIM_MODES, DIM_LABELS, handlerIds,
     'Fade widgets while a window is focused'));
-  group.add(intSpinRow(settings, 'grid-gap', 'Grid spacing', 8, 32, 2, handlerIds));
+  group.add(intSpinRow(settings, 'grid-gap', 'Grid spacing', 8, 64, 2, handlerIds));
   group.add(switchRow(settings, 'glass', 'Glass effect', 'Blur the wallpaper behind widgets', handlerIds));
   page.add(group);
   return page;

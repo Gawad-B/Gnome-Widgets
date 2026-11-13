@@ -28,9 +28,9 @@ const BLUR_MARGIN_FACTOR = 2;
 //     keeps the visible edges free of the darkening a blur run on an already-clipped texture
 //     would otherwise cause.
 //   - `_tint`: the glass surface color and top-edge highlight, painted over the blur. A card
-//     with a live backdrop never sees its own inline surface color or box-shadow - both are
-//     painted before children, and this whole actor is one opaque child sitting on top - so this
-//     is where those actually become visible.
+//     with a live backdrop never sees its own inline surface color - it is painted before
+//     children, and this whole actor is one opaque child sitting on top - so this is where it
+//     actually becomes visible.
 export class GlassBackdrop {
   readonly actor: Clutter.Actor;
   private readonly _blurBox: Clutter.Actor;
